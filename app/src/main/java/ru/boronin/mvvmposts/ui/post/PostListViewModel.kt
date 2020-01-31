@@ -1,5 +1,7 @@
 package ru.boronin.mvvmposts.ui.post
 
+import android.view.View
+import androidx.lifecycle.MutableLiveData
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -16,6 +18,8 @@ class PostListViewModel : BaseViewModel() {
     lateinit var postApi: PostApi
 
     private lateinit var subscription: Disposable
+
+    val loadingVisibility: MutableLiveData<Int> = MutableLiveData()
 
     init{
         loadPosts()
@@ -42,11 +46,11 @@ class PostListViewModel : BaseViewModel() {
     }
 
     private fun onRetrievePostListStart() {
-
+        loadingVisibility.value = View.VISIBLE
     }
 
     private fun onRetrievePostListFinish() {
-
+        loadingVisibility.value = View.GONE
     }
 
     private fun onRetrievePostListSuccess() {
