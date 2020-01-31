@@ -2,19 +2,21 @@ package ru.boronin.mvvmposts.ui.post
 
 import android.view.View
 import androidx.lifecycle.MutableLiveData
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import ru.boronin.mvvmposts.R
 import ru.boronin.mvvmposts.base.BaseViewModel
 import ru.boronin.mvvmposts.model.Post
+import ru.boronin.mvvmposts.model.PostDao
 import ru.boronin.mvvmposts.network.PostApi
 import javax.inject.Inject
 
 /**
  * Created by Sergey Boronin on 31.01.2020.
  */
-class PostListViewModel : BaseViewModel() {
+class PostListViewModel(private val postDao: PostDao) : BaseViewModel() {
 
     @Inject
     lateinit var postApi: PostApi
@@ -22,7 +24,6 @@ class PostListViewModel : BaseViewModel() {
     private lateinit var subscription: Disposable
 
     val postListAdapter: PostListAdapter = PostListAdapter()
-
     val loadingVisibility: MutableLiveData<Int> = MutableLiveData()
     val errorMessage: MutableLiveData<Int> = MutableLiveData()
     val errorClickListener = View.OnClickListener { loadPosts() }
@@ -39,7 +40,17 @@ class PostListViewModel : BaseViewModel() {
     // region private
 
     private fun loadPosts(){
-        subscription = postApi.getPosts()
+        subscription = Observable.fromCallable { postDao.all }
+            .concatMap { dbPostList ->
+                if(dbPostList.isEmpty())
+                    postApi.getPosts().concatMap { apiPostList ->
+                        postDao.insertAll(*apiPostList.toTypedArray())
+                        Observable.just(apiPostList)
+                    }
+                else {
+                    Observable.just(dbPostList)
+                }
+            }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { onRetrievePostListStart() }
