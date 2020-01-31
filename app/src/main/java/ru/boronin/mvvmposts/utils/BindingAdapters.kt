@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.RecyclerView
 import ru.boronin.mvvmposts.utils.extension.getParentActivity
 
 /**
@@ -26,4 +27,9 @@ fun setMutableText(view: TextView, text: MutableLiveData<String>?) {
     if(parentActivity != null && text != null) {
         text.observe(parentActivity, Observer { value -> view.text = value ?: ""})
     }
+}
+
+@BindingAdapter("adapter")
+fun setAdapter(view: RecyclerView, adapter: RecyclerView.Adapter<*>) {
+    view.adapter = adapter
 }

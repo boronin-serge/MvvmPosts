@@ -7,6 +7,7 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import ru.boronin.mvvmposts.R
 import ru.boronin.mvvmposts.base.BaseViewModel
+import ru.boronin.mvvmposts.model.Post
 import ru.boronin.mvvmposts.network.PostApi
 import javax.inject.Inject
 
@@ -19,6 +20,8 @@ class PostListViewModel : BaseViewModel() {
     lateinit var postApi: PostApi
 
     private lateinit var subscription: Disposable
+
+    val postListAdapter: PostListAdapter = PostListAdapter()
 
     val loadingVisibility: MutableLiveData<Int> = MutableLiveData()
     val errorMessage: MutableLiveData<Int> = MutableLiveData()
@@ -41,8 +44,8 @@ class PostListViewModel : BaseViewModel() {
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { onRetrievePostListStart() }
             .doOnTerminate { onRetrievePostListFinish() }
-            .subscribe({
-                onRetrievePostListSuccess()
+            .subscribe({ result ->
+                onRetrievePostListSuccess(result)
             }, {
                 onRetrievePostListError()
             })
@@ -57,8 +60,8 @@ class PostListViewModel : BaseViewModel() {
         loadingVisibility.value = View.GONE
     }
 
-    private fun onRetrievePostListSuccess() {
-
+    private fun onRetrievePostListSuccess(postList: List<Post>) {
+        postListAdapter.updatePostList(postList)
     }
 
     private fun onRetrievePostListError() {
