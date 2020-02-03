@@ -13,7 +13,7 @@ import ru.boronin.mvvmposts.model.Post
  */
 class PostListAdapter : RecyclerView.Adapter<PostListAdapter.ViewHolder>() {
 
-    private lateinit var postList: List<Post>
+    private lateinit var postList: MutableList<Post>
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding: ItemPostBinding = DataBindingUtil.inflate(
@@ -26,23 +26,29 @@ class PostListAdapter : RecyclerView.Adapter<PostListAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(postList[position])
+        holder.bind(postList[position]) {
+            postList.removeAt(position)
+            notifyItemRemoved(position)
+        }
     }
 
     override fun getItemCount(): Int {
         return if(::postList.isInitialized) postList.size else 0
     }
 
-    fun updatePostList(postList: List<Post>){
+    fun updatePostList(postList: MutableList<Post>){
         this.postList = postList
         notifyDataSetChanged()
     }
 
-    class ViewHolder(private val binding: ItemPostBinding): RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(
+        private val binding: ItemPostBinding
+    ): RecyclerView.ViewHolder(binding.root) {
         private val viewModel = PostViewModel()
 
-        fun bind(post:Post){
+        fun bind(post: Post, listener: () -> Unit) {
             viewModel.bind(post)
+            viewModel.setRemoveListener(listener)
             binding.viewModel = viewModel
         }
     }

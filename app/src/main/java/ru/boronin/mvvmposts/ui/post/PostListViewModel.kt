@@ -72,7 +72,7 @@ class PostListViewModel(private val postDao: PostDao) : BaseViewModel() {
     }
 
     private fun onRetrievePostListSuccess(postList: List<Post>) {
-        postListAdapter.updatePostList(postList)
+        postListAdapter.updatePostList(postList.toMutableList())
     }
 
     private fun onRetrievePostListError() {
